@@ -84,20 +84,6 @@
 </template>
 
 <script>
-import {testGet} from '@/api/index'
-export default {
-  name: 'HelloWorld',
-  data () {
-    return {
-      msg: 'Welcome to Your Vue.js App'
-    }
-  },
-  created () {
-    testGet().then(res => {
-      console.log('test-get', res)
-    })
-  }
-}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

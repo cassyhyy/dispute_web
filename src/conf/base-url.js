@@ -9,7 +9,7 @@
 import {conf} from '@/util/env'
 
 export const DISPUTE_URL = conf({
-  dev: 'http://127.0.0.1:8080',
-  sit: 'http://127.0.0.1:8080',
-  prod: 'http://127.0.0.1:8080'
+  dev: 'http://47.103.4.230:8080',
+  sit: 'http://47.103.4.230:8080',
+  prod: 'http://47.103.4.230:8080'
 })

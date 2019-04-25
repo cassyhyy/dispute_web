@@ -11,6 +11,6 @@ import {DISPUTE_URL} from '@/conf/base-url'
 
 // post接口-示例
 export const testPost = data => post(`${DISPUTE_URL}/test/post`, data)
-
+export const Api = (url, data) => post(DISPUTE_URL + '/' + url, data)
 // get接口-示例
 export const testGet = () => get(`${DISPUTE_URL}/test/get`)

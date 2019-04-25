@@ -6,54 +6,68 @@
       <div class="btn-list">
         <p class="btn-item">纠纷类型-医患纠纷</p>
         <el-form ref="form" label-position="top" label-width="80px">
-          <el-form-item label="发生地点">
-            <el-row :gutter="0">
-              <el-col :span="12">
-                <el-select v-model="value" clearable placeholder="省名" class="select-tool">
-                  <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-select v-model="value" clearable placeholder="市名" class="select-tool">
-                  <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
-                </el-select>
-              </el-col>
-            </el-row>
-          </el-form-item>
           <el-form-item label="简要情况">
-            <el-input placeholder="简要情况" type="textarea" :rows="3" resize="none"></el-input>
+            <el-input placeholder="简要情况" v-model="brief" type="textarea" :rows="8" resize="none"></el-input>
           </el-form-item>
-          <el-form-item label="案件点评">
-            <el-input placeholder="案件点评" type="textarea" :rows="5" resize="none"></el-input>
+          <el-form-item label="标签" v-if="tags.length > 0">
+            <div class="tag-info">
+              <p class="tip">*点击标签可自定义标签顺序</p>
+              <el-tag
+                :key="index"
+                v-for="(item, index) in tags"
+                closable
+                :disable-transitions="false"
+                @click="changeTagIndex(item)"
+                @close="handleClose(item)">
+                {{item}}
+              </el-tag>
+              <el-input
+                class="input-new-tag"
+                v-if="inputVisible"
+                v-model="inputValue"
+                ref="saveTagInput"
+                size="small"
+                @keyup.enter.native="handleInputConfirm"
+                @blur="handleInputConfirm">
+              </el-input>
+              <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加标签</el-button>
+            </div>
           </el-form-item>
           <el-form-item>
-            <el-button class="large">查询相关案例</el-button>
+            <el-button class="large" type="primary" @click="getTag">根据简要情况获取标签</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button class="large" @click="search">根据标签查询相关案例</el-button>
           </el-form-item>
         </el-form>
       </div>
     </div>
     <div class="common-contain">
-      <el-card class="search-result-card" shadow="hover">
+      <el-card class="search-result-card" shadow="hover" v-for="(item, index) in list" :key="index">
         <div slot="header" class="search-result-title">
-          <router-link class="title" :to="{name: 'detail'}">卡片名称</router-link>
+          <router-link class="title" :to="{name: 'detail', params: {id: item.id}}">{{item.disputeName}}</router-link>
         </div>
         <div class="search-result-info">
-          一些内容
+          {{item.disputeResolution}}
         </div>
         <div class="search-result-text">
-          {{'列表内容 '}}
+          {{item.briefInfo}}
         </div>
       </el-card>
+      <el-card class="search-result-card" shadow="hover" v-if="!total">
+        <div class="search-result-text center">
+          暂无内容
+        </div>
+      </el-card>
+      <el-pagination
+        v-if="limit < total"
+        class="page"
+        :page-size="limit"
+        :pager-count="5"
+        @current-change="handleCurrentChange"
+        layout="prev, pager, next"
+        :total="total">
+      </el-pagination>
     </div>
   </div>
 </div>
@@ -61,32 +75,20 @@
 
 <script>
 import Nav from '@/components/common/header'
+import {Api} from '@/Api/index'
 export default {
   data () {
     return {
-      activeIndex: '1',
+      activeIndex: '2',
       placeholder: '请输入书籍名称',
-      key: '', // 搜索关键词
-      options: [{
-        value: '1',
-        label: '1'
-      }, {
-        value: '2',
-        label: '2'
-      }, {
-        value: '3',
-        label: '3'
-      }, {
-        value: '4',
-        label: '4'
-      }, {
-        value: '5',
-        label: '5'
-      }],
-      value: '',
-      dynamicTags: ['标签一', '标签二', '标签三'],
       inputVisible: false,
-      inputValue: ''
+      inputValue: '',
+      tags: [],
+      brief: '',
+      page: 0,
+      limit: 10,
+      total: 0, // 结果总数
+      list: []
     }
   },
   components: {
@@ -94,7 +96,7 @@ export default {
   },
   methods: {
     handleClose (tag) {
-      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1)
+      this.tags.splice(this.tags.indexOf(tag), 1)
     },
     showInput () {
       this.inputVisible = true
@@ -105,10 +107,71 @@ export default {
     handleInputConfirm () {
       let inputValue = this.inputValue
       if (inputValue) {
-        this.dynamicTags.push(inputValue)
+        this.tags.push(inputValue)
       }
       this.inputVisible = false
       this.inputValue = ''
+    },
+    changeTagIndex (item) {
+      this.$prompt('请输入标签位置', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /^[0-9]/,
+        inputErrorMessage: '请输入大于0的数字'
+      }).then(({ value }) => {
+        if (this.tags.length < Number(value)) {
+          this.tags.splice(this.tags.indexOf(item), 1)
+          this.tags.push(item)
+        } else {
+          console.log(this.tags)
+          this.tags.splice(this.tags.indexOf(item), 1)
+          this.tags.splice(Number(value) - 1, 0, item)
+          console.log(this.tags)
+        }
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消输入'
+        })
+      })
+    },
+    async getTag () {
+      let res = await this.getTagByContent()
+      if (res && res.success) {
+        this.tags = res.data
+      }
+    },
+    getTagByContent () {
+      let that = this
+      if (!that.brief) {
+        this.$message('请输入简要信息')
+        return
+      }
+      return new Promise((resolve, reject) => {
+        resolve(Api('text/getKeyword', {content: that.brief}))
+      })
+    },
+    async search () {
+      let res = await this.getListByKey()
+      if (res && res.success) {
+        this.list = res.data.list
+        this.total = res.data.total
+      }
+    },
+    getListByKey () {
+      let that = this
+      if (that.tags.length === 0) {
+        this.$message('请输入标签')
+        return
+      }
+      return new Promise((resolve, reject) => {
+        resolve(Api('es/searchByKeyword', {keyword: that.tags, page: that.page, limit: that.limit}))
+      })
+    },
+    // 页面切换
+    handleCurrentChange (val) {
+      this.page = val - 1
+      this.search()
     }
   }
 }
@@ -120,15 +183,7 @@ export default {
 .common .common-side .btn-list .btn-item{display:block;height:48px;line-height:48px;text-decoration:none;color:#fff;}
 .common .common-side .btn-list .btn-item:active{color:#eee;}
 .common .common-contain{position: relative;margin-left:30%;padding:50px 120px;box-sizing: border-box;}
-.common .common-contain .common-detail{width:100%;background:#fff;min-height:100px;padding:30px 50px;box-sizing:border-box;}
-.common .common-contain .common-detail .tip{color:#999;margin-bottom:20px;}
-.common .common-contain .common-detail .select-tool{margin-right:12px;}
-.common .common-contain .common-detail .tag-title{line-height:16px;font-size:16px;}
-.common .common-contain .common-detail .tag-info .input-new-tag{width: 90px;margin-left: 10px;vertical-align: bottom;}
-.common .common-contain .common-detail .tag-info .button-new-tag{margin-left: 10px;height: 32px;line-height: 30px;padding-top: 0;padding-bottom: 0;}
-.common .common-contain .common-detail .tag-info .el-tag + .el-tag{margin-left: 10px;}
 .common .common-side .el-form-item__label{font-size:18px;color:#fff;line-height:18px;}
-.common .common-side .select-tool{margin-right:12px;}
 .large{width:100%;}
 .common .search-result-card{width:100%;margin-bottom:30px;cursor: pointer;}
 .common .search-result-card:hover{transform: translateY(-5px);}
@@ -137,4 +192,9 @@ export default {
 .common .title:hover{color:#2466bb;text-decoration: none;}
 .common .search-result-info{padding-bottom:6px;border-bottom:1px dotted #eaeaea;max-width:100%;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
 .common .search-result-text{padding-top:6px;position:relative;line-height:25px;max-height:75px;width:100%;overflow:hidden;}
+.common .search-result-text.center{text-align:center;}
+.common .common-side .tag-info .tip{line-height:16px;font-size:12px;color:#d4d4d4;}
+.common .common-side .tag-info .input-new-tag{width: 90px;vertical-align:middle;}
+.common .common-side .tag-info .button-new-tag{height: 32px;line-height: 30px;padding-top: 0;padding-bottom: 0;vertical-align: middle;}
+.common .common-side .tag-info .el-tag{background:#fff;cursor: pointer;margin-right: 10px;}
 </style>

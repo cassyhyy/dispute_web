@@ -4,9 +4,7 @@
   <div class="home-contain">
     <div class="search-contain">
       <div class="search-type-list">
-        <a class="search-type-item" @click="changeType('name')" :class="type === 'name' ? 'active' : ''">按名称搜索</a>
-        <a class="search-type-item" @click="changeType('author')" :class="type === 'author' ? 'active' : ''">按作者搜索</a>
-        <a class="search-type-item" @click="changeType('ISBN')" :class="type === 'ISBN' ? 'active' : ''">按编号搜索</a>
+        <a class="search-type-item">请输入名称进行搜索</a>
       </div>
       <el-input :placeholder="placeholder" v-model="key" @keyup.enter.native="search" >
         <i slot="suffix" @click="search" class="el-input__icon el-icon-search search-btn"></i>
@@ -22,7 +20,6 @@ export default {
   data () {
     return {
       activeIndex: '3',
-      type: 'name',
       placeholder: '请输入书籍名称',
       key: '' // 搜索关键词
     }
@@ -31,22 +28,12 @@ export default {
     Nav
   },
   methods: {
-    changeType (type) {
-      this.type = type
-      if (type === 'name') {
-        this.placeholder = '请输入书籍名称'
-      } else if (type === 'author') {
-        this.placeholder = '请输入书籍作者'
-      } else {
-        this.placeholder = '请输入书籍ISBN'
-      }
-    },
     search () {
       if (!this.key) {
         this.$message('请输入搜索关键词')
         return
       }
-      this.$router.push({name: 'searchList', params: {key: this.key, type: this.type}})
+      this.$router.push({name: 'searchList', params: {key: this.key}})
     }
   }
 }

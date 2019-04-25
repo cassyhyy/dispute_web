@@ -28,7 +28,7 @@ export default {
           this.$router.push({name: 'common'})
           break
         case '3':
-          this.$router.push({name: 'searchList'})
+          this.$router.push({name: 'home'})
           break
         case '4':
           this.$router.push({name: ''})
@@ -43,7 +43,7 @@ export default {
 </script>
 
 <style>
-.nav{position:fixed;left:0;right:0;height:60px;z-index: 1;}
+.nav{position:fixed;left:0;right:0;top:0;height:60px;z-index: 1;}
 .nav .title{float:left;height:60px;line-height:60px;padding:0 40px;margin-left:40px;}
 .nav .pull-right.el-menu-item{float:right;}
 .nav .el-menu-item.is-disabled{color:#333;cursor: pointer;opacity:inherit;font-size:18px;}

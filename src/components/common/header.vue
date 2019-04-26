@@ -4,7 +4,7 @@
     <el-menu-item index="1">录入文书</el-menu-item>
     <el-menu-item index="2">医患纠纷-普通用户入口</el-menu-item>
     <el-menu-item index="3">搜索</el-menu-item>
-    <el-menu-item index="4">使用方式</el-menu-item>
+    <!-- <el-menu-item index="4">使用方式</el-menu-item> -->
     <el-menu-item index="5" class="pull-right">联系我们</el-menu-item>
   </el-menu>
 </template>
@@ -34,7 +34,7 @@ export default {
           this.$router.push({name: ''})
           break
         case '5':
-          this.$router.push({name: ''})
+          this.$router.push({name: 'about'})
           break
       }
     }

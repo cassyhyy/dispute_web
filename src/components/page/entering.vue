@@ -285,8 +285,10 @@ export default {
     },
     handleInputConfirm () {
       let inputValue = this.inputValue
-      if (inputValue) {
+      if (inputValue && this.ruleModel.tags.indexOf(inputValue) === -1) {
         this.ruleModel.tags.push(inputValue)
+      } else if (inputValue && this.ruleModel.tags.indexOf(inputValue) !== -1) {
+        this.$message('标签内容重复，请重新输入')
       }
       this.inputVisible = false
       this.inputValue = ''
@@ -317,10 +319,14 @@ export default {
       if (this.name.match(nameReg)) {
         let pName = this.name.match(nameReg)[0]
         this.ruleModel.personName = pName.substring(0, pName.length - 1)
+      } else {
+        this.ruleModel.personName = ''
       }
       if (this.name.match(hospitalReg)) {
         let hName = this.name.match(hospitalReg)[0]
         this.ruleModel.hospitalName = hName.substring(1, hName.length)
+      } else {
+        this.ruleModel.hospitalName = ''
       }
     },
     // 校验输入内容
@@ -374,7 +380,7 @@ export default {
         if (res.success) {
           this.isLoading = false
           this.$message('提交成功！')
-          this.rewrite()
+          this.$router.push({name: 'detail', params: {id: res.data.id}})
         } else {
           this.isLoading = false
           this.$message('提交失败，请重试！')

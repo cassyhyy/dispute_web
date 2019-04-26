@@ -9,7 +9,7 @@
           <el-form-item label="简要情况">
             <el-input placeholder="简要情况" v-model="brief" type="textarea" :rows="8" resize="none"></el-input>
           </el-form-item>
-          <el-form-item label="标签" v-if="tags.length > 0">
+          <el-form-item label="标签">
             <div class="tag-info">
               <p class="tip">*点击标签可自定义标签顺序</p>
               <el-tag
@@ -106,27 +106,31 @@ export default {
     },
     handleInputConfirm () {
       let inputValue = this.inputValue
-      if (inputValue) {
+      if (inputValue && this.tags.indexOf(inputValue) === -1) {
         this.tags.push(inputValue)
+      } else if (inputValue && this.tags.indexOf(inputValue) !== -1) {
+        this.$message('标签内容重复，请重新输入')
       }
       this.inputVisible = false
       this.inputValue = ''
     },
     changeTagIndex (item) {
-      this.$prompt('请输入标签位置', '提示', {
+      this.$prompt('请输入不小于0的数字，数字越小，排列越前', '标签顺序', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         inputPattern: /^[0-9]/,
-        inputErrorMessage: '请输入大于0的数字'
+        inputErrorMessage: '请输入不小于0的数字'
       }).then(({ value }) => {
         if (this.tags.length < Number(value)) {
           this.tags.splice(this.tags.indexOf(item), 1)
           this.tags.push(item)
         } else {
-          console.log(this.tags)
           this.tags.splice(this.tags.indexOf(item), 1)
-          this.tags.splice(Number(value) - 1, 0, item)
-          console.log(this.tags)
+          if (Number(value) > 0) {
+            this.tags.splice(Number(value) - 1, 0, item)
+          } else {
+            this.tags.splice(0, 0, item)
+          }
         }
       }).catch(() => {
         this.$message({
@@ -154,8 +158,11 @@ export default {
     async search () {
       let res = await this.getListByKey()
       if (res && res.success) {
+        this.$message('查询成功！')
         this.list = res.data.list
         this.total = res.data.total
+      } else {
+        this.$message('查询失败，请重试')
       }
     },
     getListByKey () {
@@ -177,12 +184,12 @@ export default {
 }
 </script>
 <style>
-.wrapper.common{position:relative;min-height:800px;top:60px;bottom:0;width:100%;background:url(../../assets/img/index-back-8.jpg) top left no-repeat;background-size:cover;}
+.wrapper.common{position:relative;min-height:800px;bottom:0;width:100%;background:url(../../assets/img/index-back-8.jpg) top left no-repeat;background-size:cover;}
 .common .common-side{position:fixed;left:0;bottom:0;top:60px;width:30%;padding:40px 60px;background: rgba(0, 59, 112, 0.5);box-sizing:border-box;}
 .common .common-side .btn-list{width:100%;font-size:24px;}
 .common .common-side .btn-list .btn-item{display:block;height:48px;line-height:48px;text-decoration:none;color:#fff;}
 .common .common-side .btn-list .btn-item:active{color:#eee;}
-.common .common-contain{position: relative;margin-left:30%;padding:50px 120px;box-sizing: border-box;}
+.common .common-contain{position: relative;margin-left:30%;padding:110px 120px 50px 120px;box-sizing: border-box;}
 .common .common-side .el-form-item__label{font-size:18px;color:#fff;line-height:18px;}
 .large{width:100%;}
 .common .search-result-card{width:100%;margin-bottom:30px;cursor: pointer;}
@@ -190,8 +197,8 @@ export default {
 .common .search-result-title{font-size:18px;}
 .common .title{display:inline-block;color:#347bd8;max-width:100%;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;text-decoration: none;}
 .common .title:hover{color:#2466bb;text-decoration: none;}
-.common .search-result-info{padding-bottom:6px;border-bottom:1px dotted #eaeaea;max-width:100%;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
-.common .search-result-text{padding-top:6px;position:relative;line-height:25px;max-height:75px;width:100%;overflow:hidden;}
+.common .search-result-info{padding-bottom:6px;border-bottom:1px dotted #eaeaea;max-width:100%;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;color:#db2929;text-decoration:none;}
+.common .search-result-text{padding-top:6px;position:relative;line-height:25px;max-height:75px;width:100%;display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 3;overflow: hidden;}
 .common .search-result-text.center{text-align:center;}
 .common .common-side .tag-info .tip{line-height:16px;font-size:12px;color:#d4d4d4;}
 .common .common-side .tag-info .input-new-tag{width: 90px;vertical-align:middle;}

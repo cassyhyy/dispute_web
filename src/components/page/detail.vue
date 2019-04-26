@@ -7,9 +7,6 @@
     <div class="detail-list">
       <div class="sub-title">基本信息</div>
       <el-form ref="form" label-width="90px" label-position="left" class="detail-form">
-        <el-form-item label="纠纷名称：" class="detail-info-item">
-          <p>{{detail.disputeName}}</p>
-        </el-form-item>
         <el-form-item label="纠纷类型：" class="detail-info-item">
           <p>{{detail.disputeType}}</p>
         </el-form-item>
@@ -41,7 +38,11 @@
           <p>{{detail.institution}}</p>
         </el-form-item>
         <el-form-item label="标签：" class="detail-info-item">
-          <p>{{detail.disputeTag}}</p>
+          <el-tag
+            :key="item"
+            v-for="item in detail.disputeTag">
+            {{item}}
+          </el-tag>
         </el-form-item>
       </el-form>
     </div>
@@ -51,7 +52,7 @@
     </div>
     <div class="detail-list">
       <div class="sub-title">调节结果</div>
-      <p class="detail-brief">{{detail.disputeResolution}}</p>
+      <p class="detail-brief success">{{detail.disputeResolution}}</p>
       <p class="detail-brief" v-if="detail.disputeResolution === '调解成功' && detail.resolutionDate">调解成功日期：{{detail.resolutionDate}}</p>
     </div>
     <div class="detail-list">
@@ -92,6 +93,14 @@ export default {
         this.detail = res.data
         this.detail.acceptDate = this.dateFormat(this.detail.acceptDate)
         this.detail.resolutionDate = this.dateFormat(this.detail.resolutionDate)
+        let tag = res.data.disputeTag.split(' ')
+        this.detail.disputeTag = []
+        console.log(tag)
+        for (let item in tag) {
+          if (tag[item] !== ' ' && tag[item] !== '') {
+            this.detail.disputeTag.push(tag[item])
+          }
+        }
       } else {
         this.$message('获取信息失败，请重试')
       }
@@ -118,13 +127,15 @@ export default {
 </script>
 <style>
 .wrapper{position: fixed;top:0;bottom:0;width:100%;background:url(../../assets/img/index-back-8.jpg) top left no-repeat;background-size:cover;}
-.detail{position:relative;overflow:auto;padding-top:60px;max-height:100%;box-sizing: border-box;}
+.detail{position:relative;overflow:auto;padding:60px 0;max-height:100%;box-sizing: border-box;}
 .detail .detail-contain{position: relative;margin:30px 0;width:80%;margin-left:10%;padding:30px;background:#fff;margin-bottom:30px;}
 .detail .detail-contain .title{font-size:24px;color:#333;padding-bottom:8px;border-bottom:1px solid #e0e0e0;margin-bottom:10px;}
 .detail .detail-contain .detail-list{border-bottom:1px solid #e0e0e0;margin-bottom:10px;}
 .detail .detail-contain .detail-list:last-child{border-bottom:0;margin-bottom:10px;}
-.detail .detail-contain .sub-title{font-size:18px;color:#575757;}
+.detail .detail-contain .sub-title{font-size:18px;color:#539eff;margin-bottom:10px;}
 .detail .detail-contain .detail-form{margin-left:20px;}
 .detail .detail-contain .detail-info-item{margin-bottom:0;}
+.detail .detail-contain .detail-info-item .el-tag + .el-tag{margin-left: 5px;}
 .detail .detail-contain .detail-brief{margin:8px 20px;}
+.detail .detail-contain .detail-brief.success{color:#db2929;}
 </style>
